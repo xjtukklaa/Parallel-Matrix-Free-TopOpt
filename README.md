@@ -295,7 +295,7 @@ end
 5. Sigmund, O., & Maute, K. (2013). *Topology optimization approaches*. SMO.
 6. Kollmannsberger, S. et al. (2019). *Parameter-free, matrix-free finite element methods*. Wiley.
 7. deal.II documentation: https://www.dealii.org/
-8. MMA Code from https://github.com/topopt/TopOpt_in_PETSc.git
+8. MMA Code from https://github.com/topopt/TopOpt_in_PETSc.git, Change to deal.ii version
 9. Aage, N., et al. (2015). *Topology optimization using PETSc: An easy-to-use, fully parallel, open source topology optimization framework.* Structural and Multidisciplinary Optimization, 51(3), 565–572. https://doi.org/10.1007/s00158-014-1157-0
 ---
 
