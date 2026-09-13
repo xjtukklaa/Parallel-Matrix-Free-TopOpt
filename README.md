@@ -85,8 +85,7 @@ $$\min_{\rho} \; c(\rho) = \mathbf{u}^T \mathbf{K}(\rho) \mathbf{u} \quad \text{
 - Adjoint sensitivity of the objective and volume constraint
 - MMA update
 - Mesh Adapt
-
-<video src="fig/StructuralOpt.mp4" autoplay loop muted playsinline width="600"></video>
+![Structural Optimization](fig/StructuralOpt.gif)
 ---
 
 ### 3. NS Flow Thermal Optimization
@@ -110,7 +109,7 @@ $$\alpha(\rho)\mathbf{u} = \frac{\alpha_{\max}(1-\rho)}{\rho+\epsilon}\mathbf{u}
 - Constraints: flow dissipation / pump power / inlet pressure / volume fraction
 - Sensitivity: continuous adjoint (velocity-pressure-temperature three-field coupling)
 
-<video src="fig/NS-loop.mp4" autoplay loop muted playsinline width="600"></video>
+![NS Flow Final1](fig/NS-loop.gif)
 
 ![NS Flow Final](fig/NS-loop.0200.png)
 
@@ -136,8 +135,7 @@ Thermal inverse homogenization: design microstructures with a target effective t
 - Each `vmult` only loops over cells for local computation; memory usage is **almost independent of the number of DoFs**
 - Objective: match the effective thermal conductivity tensor $\kappa^H_{ij}$ to the target value
 
-<video src="fig/HeatMFInHom.mp4" autoplay loop muted playsinline width="600"></video>
-
+![HeatMFInHom](fig/HeatMFInHom.gif)
 ---
 
 ### 5. Matrix-Free Heat Transfer Optimization
