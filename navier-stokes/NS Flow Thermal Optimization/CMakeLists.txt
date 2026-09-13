@@ -1,41 +1,63 @@
+cmake_minimum_required(VERSION 3.27)
 
-# Set the name of the project and target:
-set(TARGET "HeatFlowTopOpt")
-
-file(GLOB_RECURSE TARGET_SRC  "src/*.cc")
-file(GLOB_RECURSE TARGET_INC  "include/*.h")
-set(TARGET_SRC ${TARGET_SRC}  ${TARGET_INC})
+project(NSHeatFlowTopOpt)
 
 
-# Usually, you will not need to modify anything beyond this point...
+# ============================
+# Source files
+# ============================
 
-cmake_minimum_required(VERSION 3.13.4)
-set(CMAKE_PREFIX_PATH "/home/xjtukkl/workspace/dealii/deal.II-v9.8.0/lib/cmake/deal.II")
-find_package(deal.II 9.8.0 REQUIRED HINTS ${DEAL_II_DIR} ../ ../../ $ENV{DEAL_II_DIR})
+file(GLOB_RECURSE TARGET_SRC
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
+)
 
-# Are all dependencies fulfilled?
+file(GLOB_RECURSE TARGET_INC
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/*.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp"
+)
 
-if(NOT DEAL_II_WITH_PETSC) # keep in one line
-  message(FATAL_ERROR "
-Error! This tutorial requires a deal.II library that was configured with the following options:
-    DEAL_II_WITH_PETSC = ON
-However, the deal.II library found at ${DEAL_II_PATH} was configured with these options:
-    DEAL_II_WITH_PETSC = ${DEAL_II_WITH_PETSC}
-This conflicts with the requirements."
+# ============================
+# Executable
+# ============================
+
+add_executable(
+    ${PROJECT_NAME}
+    ${TARGET_SRC}
+    ${TARGET_INC}
+)
+
+
+# ============================
+# Include
+# ============================
+
+target_include_directories(
+    ${PROJECT_NAME}
+    PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+
+# ============================
+# deal.II setup
+# ============================
+
+deal_ii_setup_target(
+    ${PROJECT_NAME}
+)
+
+# ============================
+# Copy input files
+# ============================
+
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/input)
+
+    add_custom_command(
+        TARGET ${PROJECT_NAME}
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_CURRENT_SOURCE_DIR}/input
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/input
     )
+
 endif()
-
-
-# For MPI Include package
-find_package(MPI REQUIRED)
-include_directories (${MPI_CXX_INCLUDE_DIRS})
-
-# Assignment CMAKE_CXX_COMPILER
-set(CMAKE_CXX_COMPILER, "/usr/bin/mpicxx")
-
-# Debug or Release
-set(CMAKE_BUILD_TYPE "Release")
-
-deal_ii_initialize_cached_variables()
-project(${TARGET})
-deal_ii_invoke_autopilot()

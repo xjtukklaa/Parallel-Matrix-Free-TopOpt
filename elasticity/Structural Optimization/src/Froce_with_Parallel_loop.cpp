@@ -1,5 +1,5 @@
 #include "../include/Force_with_Parallel.h"
-#include <iomanip>
+
 ForceProblem::ForceProblem()
 	: mpi_communicator(MPI_COMM_WORLD),
 	  this_mpi_process(Utilities::MPI::this_mpi_process(mpi_communicator)),
@@ -60,8 +60,8 @@ void ForceProblem::run()
 	init_simp();
 	// 
 	pcout<<"Number Of Dofs : "<<dof_handler.n_dofs()<<std::endl
-		<<"Number Of Cells : "<<triangulation.n_active_cells()<<std::endl;
-
+		<<"Number Of Cells : "<<triangulation.n_active_cells()<<std::endl
+		<<"Number Of Dofs Filter : "<<dof_handler_filter.n_dofs()<<std::endl;
 	double change = 1e10;
 	double vol_now = 0;
 	double Object_Funtion_Values = 0;
@@ -87,12 +87,12 @@ void ForceProblem::run()
 			assemble_filter_rhs(Cell_Volume);
 			solve_filter();
 			generate_average_vector(Constraint_Diff_Values[0]);
+			// set_cell_nothing_values(Constraint_Diff_Values[0]);
 		}
 		// 
 		assemble_filter_rhs(Simp_Rho);
 		solve_filter();
 		generate_average_vector(Simp_Rho_Filted);
-		Simp_Rho_Filted = Simp_Rho;
 		// 
 		assemble_system();
 		assemble_system_rhs();
@@ -103,10 +103,22 @@ void ForceProblem::run()
 		solve_filter();
 		generate_average_vector(Object_Diff_Values);
 	    // 
-		vol_now = Cell_Volume * Simp_Rho_Filted;
+	    vol_now = 0;
+		for (unsigned int i : locally_owned_dofs_rho)
+		{
+			vol_now += Cell_Volume[i] * Simp_Rho_Filted[i];
+		}
+		vol_now = Utilities::MPI::sum(vol_now, mpi_communicator);
         Constraint_Function_Values[0] = (vol_now - (Cell_Volume.l1_norm() * volfrac));
 		//
-		Object_Funtion_Values = system_rhs * completely_distributed_solution;
+		Object_Funtion_Values = 0;
+		for (unsigned int i : locally_owned_dofs)
+		{
+			Object_Funtion_Values += system_rhs[i] * completely_distributed_solution[i];
+		}
+		Object_Funtion_Values = Utilities::MPI::sum(Object_Funtion_Values, mpi_communicator);	
+		// 
+		// set_cell_nothing_values(Object_Diff_Values);
 		// 
 		MMA_Solver.Deal_II_MMA_Dual_Problem_Solve(Simp_Rho,
 		                                          Object_Diff_Values,
@@ -115,27 +127,28 @@ void ForceProblem::run()
 												  Simp_Max,
 												  Simp_Min);
 		change = MMA_Solver.Deal_II_MMA_Get_Change(Simp_Rho);
-		// pcout<< std::fixed << std::setprecision(5)
-		//      <<"It : "<<MMA_Solver.Loop_Iter<<"\t"
-		// 	 <<" Change : "<<change<<"\t"
-		// 	 <<" Object : "<<Object_Funtion_Values<<"\t"
-		// 	 <<" Const : "<<Constraint_Function_Values[0]<<"\t"
-		// 	 <<" Vol : "<<vol_now/Cell_Volume.l1_norm()<<"\t"
-		// 	 <<std::endl;		
-		// if (MMA_Solver.Loop_Iter % 15 == 0)
-		// {
-		// 	Refine_Grid();
-		// 	// 
-		// 	get_cell_volume();
-		// 	// 
-		// 	assemble_filter_system();
-		// 	// 
-		// 	assemble_filter_rhs(Cell_Volume);
-		// 	solve_filter();
-		// 	generate_average_vector(Constraint_Diff_Values[0]);
-		// }
+		pcout<<"It : "<<MMA_Solver.Loop_Iter<<"\t"
+			<<" Change : "<<change<<"\t"
+			<<" Object : "<<Object_Funtion_Values<<"\t"
+			<<" Const : "<<Constraint_Function_Values[0]<<"\t"
+			<<" Vol : "<<vol_now/Cell_Volume.l1_norm()<<"\t"
+			<<std::endl;		
+		if (MMA_Solver.Loop_Iter % 20 == 0)
+		{
+			// set_cell_material_id();
+			Refine_Grid();
+			setup_system();
+			setup_filter_system();
+			get_cell_volume();
+			// 
+			assemble_filter_system();
+			assemble_filter_rhs(Cell_Volume);
+			solve_filter();
+			generate_average_vector(Constraint_Diff_Values[0]);
+		}
 		output_results(MMA_Solver.Loop_Iter);
 	}
+	time();
 }
 
 void ForceProblem::time()

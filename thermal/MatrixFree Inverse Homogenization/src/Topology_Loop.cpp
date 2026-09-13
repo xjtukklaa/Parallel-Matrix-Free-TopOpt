@@ -291,7 +291,7 @@ void Heat_Solver::output_results()
     DataOutBase::VtkFlags flags;
     flags.compression_level = DataOutBase::CompressionLevel::best_speed;
     data_out.set_flags(flags);
-    data_out.write_vtu_with_pvtu_record("./Simp_Out/", "simp", MMA_Optimizer.Loop_Iter, mpi_communicator);
+    data_out.write_vtu_with_pvtu_record("./", "simp", MMA_Optimizer.Loop_Iter, mpi_communicator);
 
     // // Solution Output
     // DataOut<dimension> data_out_solution;
@@ -399,10 +399,10 @@ void Heat_Solver::run()
     neta = 1e-3;
     double value_const = 0;
     // 初始化网格
-    // pcout << "+---------------------------------------------------------------------------+" << std::endl;
-    // pcout << "|                             INIT OPTIMIZATION                             |" << std::endl;
-    // pcout << "+---------------------------------------------------------------------------+" << std::endl;
-    // pcout << std::endl;
+    pcout << "+---------------------------------------------------------------------------+" << std::endl;
+    pcout << "|                             INIT OPTIMIZATION                             |" << std::endl;
+    pcout << "+---------------------------------------------------------------------------+" << std::endl;
+    pcout << std::endl;
     make_grid();
 
     setup_simp_system();
@@ -428,24 +428,24 @@ void Heat_Solver::run()
     // keep_boundary_shape(Constraint_Discrete_Derivative[0]);
     //
 
-    // pcout << std::endl;
-    // pcout << "+---------------------------------------------------------------------------+" << std::endl;
-    // pcout << "|                             DEGREE OF FREEDOM                             |" << std::endl;
-    // pcout << "+---------------------------------------------------------------------------+" << std::endl;
-    // pcout << std::endl;
+    pcout << std::endl;
+    pcout << "+---------------------------------------------------------------------------+" << std::endl;
+    pcout << "|                             DEGREE OF FREEDOM                             |" << std::endl;
+    pcout << "+---------------------------------------------------------------------------+" << std::endl;
+    pcout << std::endl;
 
-    // pcout << "+---------------------------------------------------------------------------+" << std::endl;
-    // pcout << "                             " << "Simp    : " << triangulation.n_global_active_cells() << std::endl;
-    // pcout << "                             " << "Laplace : " << dof_handler.n_dofs() << std::endl;
-    // pcout << "                             " << "Filter  : " << dof_handler_filter.n_dofs() << std::endl;
-    // pcout << "+---------------------------------------------------------------------------+" << std::endl;
-    // pcout << std::endl;
+    pcout << "+---------------------------------------------------------------------------+" << std::endl;
+    pcout << "                             " << "Simp    : " << triangulation.n_global_active_cells() << std::endl;
+    pcout << "                             " << "Laplace : " << dof_handler.n_dofs() << std::endl;
+    pcout << "                             " << "Filter  : " << dof_handler_filter.n_dofs() << std::endl;
+    pcout << "+---------------------------------------------------------------------------+" << std::endl;
+    pcout << std::endl;
 
-    // pcout << "+---------------------------------------------------------------------------+" << std::endl;
-    // pcout << "|                            START OPTIMIZATION                             |" << std::endl;
-    // pcout << "+---------------------------------------------------------------------------+" << std::endl;
+    pcout << "+---------------------------------------------------------------------------+" << std::endl;
+    pcout << "|                            START OPTIMIZATION                             |" << std::endl;
+    pcout << "+---------------------------------------------------------------------------+" << std::endl;
     // MMA优化循环
-    while (MMA_Optimizer.Loop_Iter < 50 )//&& change > 1e-4 * dof_handler_simp.n_dofs())
+    while (MMA_Optimizer.Loop_Iter < 200 && change > 1e-4 * dof_handler_simp.n_dofs())
     {
         MMA_Optimizer.Loop_Iter++;
 
@@ -465,13 +465,13 @@ void Heat_Solver::run()
             Simp_Rho_Discrete_Min[i] = std::max(1.e-3, Simp_Rho_Discrete[i] - move);
         }
 
-        // pcout << std::endl;
-        // pcout << "+---------------------------------------------------------------------------+" << std::endl;
-        // pcout << "|                             SOLVER INFOMATION                             |" << std::endl;
-        // pcout << "+---------------------------------------------------------------------------+" << std::endl;
-        // pcout << std::endl;
+        pcout << std::endl;
+        pcout << "+---------------------------------------------------------------------------+" << std::endl;
+        pcout << "|                             SOLVER INFOMATION                             |" << std::endl;
+        pcout << "+---------------------------------------------------------------------------+" << std::endl;
+        pcout << std::endl;
 
-        // pcout << "+---------------------------------------------------------------------------+" << std::endl;
+        pcout << "+---------------------------------------------------------------------------+" << std::endl;
         assemble_filter_rhs(Simp_Rho_Discrete);
         solve_filter_chebyshev();
         Simp_Rho_Continuous_Filter = filter_solution;
@@ -494,8 +494,8 @@ void Heat_Solver::run()
         Object_Discrete_Derivative /= Object_Discrete_Derivative.linfty_norm();
         // keep_boundary_shape(Object_Discrete_Derivative);
 
-        // pcout << "+---------------------------------------------------------------------------+" << std::endl;
-        // pcout << std::endl;
+        pcout << "+---------------------------------------------------------------------------+" << std::endl;
+        pcout << std::endl;
 
         // 计算体积约束
         Constraint_Function[0] = Simp_Rho_Discrete * Cell_Volume_Discrete - volfrac * Cell_Volume_Discrete.l1_norm();
@@ -504,34 +504,34 @@ void Heat_Solver::run()
         // 更新设计变量
         change = mma_optimizer(Constraint_Function);
 
-        // pcout << "+---------------------------------------------------------------------------+" << std::endl;
-        // pcout << "|                              OUTPUT  RESULTS                              |" << std::endl;
-        // pcout << "+---------------------------------------------------------------------------+" << std::endl;
+        pcout << "+---------------------------------------------------------------------------+" << std::endl;
+        pcout << "|                              OUTPUT  RESULTS                              |" << std::endl;
+        pcout << "+---------------------------------------------------------------------------+" << std::endl;
         Object_Function[0] = 0;
         for (unsigned int i = 0; i < dimension; i++)
         {
             for (unsigned int j = 0; j < dimension; j++)
             {
                 Object_Function[0] += pow(Opt_Thermal_Conductivity_Matrix[i][j] - Obj_Thermal_Conductivity_Matrix[i][j], 2.);
-                // pcout << std::setprecision(4) << std::fixed << std::scientific
-                //       << "                             "
-                //       << "Opt[" << Utilities::to_string(i, 1) << "][" << Utilities::to_string(j, 1) << "] = "
-                //       << Opt_Thermal_Conductivity_Matrix[i][j]
-                //       << std::endl
-                //       << "                             "
-                //       << std::setprecision(4) << std::fixed << std::scientific
-                //       << "Obj[" << Utilities::to_string(i, 1) << "][" << Utilities::to_string(j, 1) << "] = "
-                //       << Obj_Thermal_Conductivity_Matrix[i][j]
-                //       << std::endl;
-                // pcout << std::endl;
+                pcout << std::setprecision(4) << std::fixed << std::scientific
+                      << "                             "
+                      << "Opt[" << Utilities::to_string(i, 1) << "][" << Utilities::to_string(j, 1) << "] = "
+                      << Opt_Thermal_Conductivity_Matrix[i][j]
+                      << std::endl
+                      << "                             "
+                      << std::setprecision(4) << std::fixed << std::scientific
+                      << "Obj[" << Utilities::to_string(i, 1) << "][" << Utilities::to_string(j, 1) << "] = "
+                      << Obj_Thermal_Conductivity_Matrix[i][j]
+                      << std::endl;
+                pcout << std::endl;
             }
         }
-        // pcout << std::endl;
-        // pcout << "                             " << "Iter   : " << MMA_Optimizer.Loop_Iter << "                            " << std::endl
-        //       << "                             " << "Object : " << Object_Function[0] << "                             " << std::endl
-        //       << "                             " << "Change : " << change << "                             " << std::endl
-        //       << "                             " << "Volume : " << (Simp_Rho_Discrete * Cell_Volume_Discrete) / Cell_Volume_Discrete.l1_norm() << "                             " << std::endl;
-        // pcout << "+---------------------------------------------------------------------------+" << std::endl;
+        pcout << std::endl;
+        pcout << "                             " << "Iter   : " << MMA_Optimizer.Loop_Iter << "                            " << std::endl
+              << "                             " << "Object : " << Object_Function[0] << "                             " << std::endl
+              << "                             " << "Change : " << change << "                             " << std::endl
+              << "                             " << "Volume : " << (Simp_Rho_Discrete * Cell_Volume_Discrete) / Cell_Volume_Discrete.l1_norm() << "                             " << std::endl;
+        pcout << "+---------------------------------------------------------------------------+" << std::endl;
         pcout << "Iter : " << MMA_Optimizer.Loop_Iter 
               << " Object : " << Object_Function[0] 
               << " Change : " << change
@@ -546,7 +546,6 @@ void Heat_Solver::run()
         // }
         output_results();
     }
-    // output_simp();
     time();
 }
 

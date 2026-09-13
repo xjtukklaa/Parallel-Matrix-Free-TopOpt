@@ -63,7 +63,7 @@ void ElasticHomogenization::Init_Elastic_System()
       DoFTools::extract_locally_relevant_dofs(dof_handler);
 
   constraints.clear();
-  constraints.reinit(locally_relevant_dofs);
+  constraints.reinit(locally_owned_dofs,locally_relevant_dofs);
   DoFTools::make_hanging_node_constraints(dof_handler, constraints);
   Tensor<1, dim> offset;
   std::vector<GridTools::PeriodicFacePair<typename DoFHandler<dim>::cell_iterator>> periodicity_vector;
@@ -217,7 +217,7 @@ void ElasticHomogenization::Solve_Elastic_System()
   {
     completely_distributed_solution = 0;
     SolverControl solve_control(dof_handler.n_dofs(), 1e-9 * unit_test_rhs[Index].l2_norm());
-    PETScWrappers::SparseDirectMUMPS solver(solve_control,mpi_communicator);
+    PETScWrappers::SparseDirectMUMPS solver(solve_control);
     solver.set_symmetric_mode(true);
     solver.solve(elastic_matrix,completely_distributed_solution, unit_test_rhs[Index]);
     constraints.distribute(completely_distributed_solution);
@@ -427,7 +427,7 @@ void ElasticHomogenization::Output_Results()
   data_out_rho.add_data_vector(dof_handler_simp,Object_Function_Diff_Values,"Object_Function_Diff_Values");
   data_out_rho.add_data_vector(dof_handler_simp,Constriant_Function_Diff_Values[0],"Constriant_Function_Diff_Values");
   data_out_rho.build_patches();
-  data_out_rho.write_vtu_in_parallel("./Optimization/SimpOut-"+ Utilities::to_string(MMA_Solver.Loop_Iter) +".vtu",mpi_communicator);
+  data_out_rho.write_vtu_in_parallel("SimpOut-"+ Utilities::to_string(MMA_Solver.Loop_Iter) +".vtu",mpi_communicator);
   // 
   // DataOut<dim> data_out;
   // data_out.attach_dof_handler(dof_handler);

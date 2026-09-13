@@ -133,9 +133,9 @@ private:
     // 
     double possion = 0.3;
     double E_all = 2e11;
-    double penal = 3;
+    double penal = 4;
     double volfrac = 0.3;
     double Converage_Epsi = 1e-3;
-    unsigned int init_refine_times = 7;
-    int Loop_Max = 1000;    
+    unsigned int init_refine_times = 8;
+    int Loop_Max = 200;    
 };

@@ -9,7 +9,7 @@ void ElasticHomogenization::Init_Filter_System()
       DoFTools::extract_locally_relevant_dofs(dof_handler_filter);
 
   constraints_filter.clear();
-  constraints_filter.reinit(locally_relevant_dofs_filter);
+  constraints_filter.reinit(locally_owned_dofs_filter,locally_relevant_dofs_filter);
   DoFTools::make_hanging_node_constraints(dof_handler_filter, constraints_filter);
   constraints_filter.close();
 
@@ -131,7 +131,7 @@ void ElasticHomogenization::Solve_Filter()
 {
   completely_distributed_solution_filter = 0;
   SolverControl solver_control_filter(dof_handler_filter.n_dofs(), 1e-9 * system_rhs_filter.l2_norm());
-  PETScWrappers::SparseDirectMUMPS solver_filter(solver_control_filter,mpi_communicator);
+  PETScWrappers::SparseDirectMUMPS solver_filter(solver_control_filter);
   solver_filter.set_symmetric_mode(true);
   solver_filter.solve(system_matrix_filter,
                       completely_distributed_solution_filter,

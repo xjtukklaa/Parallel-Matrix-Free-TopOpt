@@ -7,7 +7,7 @@ namespace TopOpt
     {
         GridIn<dim> grid_in;
         grid_in.attach_triangulation(triangulation);
-        std::ifstream input_file("../input/CAD_DesignDomain_ms070.mphtxt");
+        std::ifstream input_file("./input/CAD_DesignDomain.mphtxt");
         grid_in.read_comsol_mphtxt(input_file);
 
         switch (PRM::dimensionless_method)

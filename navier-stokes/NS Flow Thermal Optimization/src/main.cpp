@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
 
     ParameterHandler prm;
     PRM::ParameterModifier prm_mdf(prm);
-    prm_mdf.read_parameters("../input/parameters.prm");
+    prm_mdf.read_parameters("./input/parameters.prm");
     prm_mdf.write_parameters();
 
     TopOptHeatFlow top_opt_heat_flow(/* degree = */ PRM::degree,

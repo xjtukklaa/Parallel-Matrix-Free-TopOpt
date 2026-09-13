@@ -19,7 +19,7 @@ void ForceProblem::setup_filter_system()
       DoFTools::extract_locally_relevant_dofs(dof_handler_filter);
 
   constraints_filter.clear();
-  constraints_filter.reinit(locally_relevant_dofs_filter);
+  constraints_filter.reinit(locally_owned_dofs_filter,locally_relevant_dofs_filter);
   DoFTools::make_hanging_node_constraints(dof_handler_filter, constraints_filter);
   constraints_filter.close();
 
@@ -71,7 +71,7 @@ void ForceProblem::assemble_filter_system()
       hp_filter_fe_values.reinit(cell_begin_filter);
       const auto & filter_fe_values = hp_filter_fe_values.get_present_fe_values();
       // 
-      Cell_Rmin = 1.5 * std::pow(cell_begin_filter->measure()/(2.*sqrt(3)),1./(double)dim);
+      Cell_Rmin = 2 * std::pow(cell_begin_filter->measure(),1./(double)dim);
       for (unsigned int filter_points : filter_fe_values.quadrature_point_indices())
       {
         for (unsigned int filter_i : filter_fe_values.dof_indices())

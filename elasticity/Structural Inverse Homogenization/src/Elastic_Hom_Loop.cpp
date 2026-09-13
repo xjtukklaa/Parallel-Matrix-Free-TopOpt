@@ -157,6 +157,6 @@ void ElasticHomogenization::Run()
                           Opt_Elastic_Conductivity_Matrix[1][1])
           <<" Change : "<<change
           <<" Vol : "<<(Simp_rho * Cell_Volume) / Cell_Volume.l1_norm()<<std::endl; 
-  }
-  Output_Results();  
+    Output_Results();  
+    }
 }

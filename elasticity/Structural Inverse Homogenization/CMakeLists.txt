@@ -1,16 +1,47 @@
 cmake_minimum_required(VERSION 3.27)
-find_package(MPI REQUIRED)
-include_directories (${MPI_CXX_INCLUDE_DIRS})
-set(CMAKE_PREFIX_PATH "/home/xjtuzxll/workspace/dealII/deal.II-master/lib/cmake/deal.II")
-find_package(deal.II 9.6.0 REQUIRED HINTS ${DEAL_II_DIR} ../ ../../ $ENV{DEAL_II_DIR})
-set(CMAKE_CXX_COMPILER, "/usr/bin/mpicxx")
 
-set(TARGET "main")
-deal_ii_initialize_cached_variables()
+project(StructuralInHomOpt)
 
-file(GLOB_RECURSE TARGET_SRC  "src/*.cpp")
-file(GLOB_RECURSE TARGET_INC  "include/*.h")
+# ============================
+# Source files
+# ============================
 
-set(TARGET_SRC ${TARGET_SRC}  ${TARGET_INC})
-project(${TARGET})
-deal_ii_invoke_autopilot()
+file(GLOB_RECURSE TARGET_SRC
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
+)
+
+file(GLOB_RECURSE TARGET_INC
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/*.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp"
+)
+
+
+# ============================
+# Executable
+# ============================
+
+add_executable(
+    ${PROJECT_NAME}
+    ${TARGET_SRC}
+    ${TARGET_INC}
+)
+
+
+# ============================
+# Include
+# ============================
+
+target_include_directories(
+    ${PROJECT_NAME}
+    PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+
+# ============================
+# deal.II setup
+# ============================
+
+deal_ii_setup_target(
+    ${PROJECT_NAME}
+)

@@ -14,9 +14,9 @@ void ForceProblem::make_grid()
   triangulation.refine_global(init_refine_times);
   for (auto &face : triangulation.active_face_iterators())
   {
-    if (std::fabs(face->center()(0) - 2.) < 1e-10)
+    if (std::fabs(face->center()(1) - 0.) < 1e-10)
     {
-      if (std::fabs(face->center()(1) - (0.5)) < 0.05)
+      if (std::fabs(face->center()(0) - (2.)) < 0.1)
       {
         face->set_boundary_id(2);
       }
@@ -65,7 +65,7 @@ void ForceProblem::setup_system()
   system_rhs.reinit(locally_owned_dofs, mpi_communicator);
 
   constraints.clear();
-  constraints.reinit(locally_relevant_dofs);
+  constraints.reinit(locally_owned_dofs,locally_relevant_dofs);
   DoFTools::make_hanging_node_constraints(dof_handler, constraints);
   VectorTools::interpolate_boundary_values(dof_handler,
                                            1,
@@ -177,7 +177,7 @@ void ForceProblem::assemble_system_rhs()
                                  update_quadrature_points | update_JxW_values);
   // 力学载荷
   Vector<double> force(dim);
-  force[1] = -1e6;
+  force[1] = 1e6;
   //
   auto cell_begin = dof_handler.begin_active();
   auto cell_end = dof_handler.end();
@@ -228,17 +228,13 @@ void ForceProblem::solve()
 {
   TimerOutput::Scope t(computing_timer, "solve");
   completely_distributed_solution = 0;
-  SolverControl solver_control(dof_handler.n_dofs(), 1e-9 * system_rhs.l2_norm());
-  PETScWrappers::PreconditionBoomerAMG pre;
-  pre.initialize(system_matrix);
-  PETScWrappers::SolverGMRES solver(solver_control);
+  SolverControl solver_control(dof_handler.n_dofs(), 1e-12 * system_rhs.l2_norm());
+  PETScWrappers::SparseDirectMUMPS solver(solver_control);
   solver.solve(system_matrix,
                completely_distributed_solution,
-               system_rhs,
-               pre);
+               system_rhs);
   constraints.distribute(completely_distributed_solution);
   locally_relevant_solution = completely_distributed_solution;
-  pcout << "Number Of CG Iter : " << solver_control.last_step() << std::endl;
 }
 
 void ForceProblem::get_object_diff_values(LA::MPI::Vector &Object_Diff_Values)
@@ -393,11 +389,18 @@ void ForceProblem::get_cell_volume()
 void ForceProblem::set_cell_material_id()
 {
   TimerOutput::Scope t(computing_timer, "set_cell_material_id");
+  std::vector<types::global_dof_index> local_dof_indices_rho(1);
   for (auto & cell_iter : dof_handler_rho.active_cell_iterators())
   {
     if (cell_iter->is_locally_owned())
     {
-      cell_iter->set_material_id(1);
+      cell_iter->get_dof_indices(local_dof_indices_rho);
+      if (Simp_Rho[local_dof_indices_rho[0]] < 1e-5)
+      {
+        cell_iter->set_material_id(2);
+      }else{
+        cell_iter->set_material_id(1);
+      }
     }
   }
 }
@@ -440,7 +443,7 @@ void ForceProblem::Refine_Grid()
 	parallel::distributed::GridRefinement::refine_and_coarsen_fixed_number(triangulation, 
 	                                                                       estimated_error_per_cell, 
                                                                          0.2, 
-                                                                         0);
+                                                                         0.1);
   if (triangulation.n_levels() > 9)
   {
       for (auto &cell : triangulation.active_cell_iterators_on_level(9))
