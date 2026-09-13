@@ -187,7 +187,8 @@ Topology optimization of transient heat transfer in phase-change materials (PCM)
 | `Deal_II_MMA_Parallel.cpp` | Parallel MMA |
 
 ![Transient Phase Change Material](fig/HeatTranOpt.png)
-<video src="fig/HeatTranOpt-100s.mp4" autoplay loop muted playsinline width="600"></video>
+
+![Transient Phase Change Material](fig/HeatTranOpt-100s.gif)
 ---
 
 ## 📦 Dependencies
