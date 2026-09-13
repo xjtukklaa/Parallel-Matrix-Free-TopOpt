@@ -1,0 +1,145 @@
+# Listing of Parameters
+# ---------------------
+
+subsection Topology optimization method parameters
+  # The iteration method for solving Navier-Stokes equations
+  set iteration_method                = newton_method
+
+  # The objective function
+  set objective_function              = heat_exchange_objective
+
+  # The flow constraint function
+  set flow_constraint_function        = flow_dissipation_constraint
+
+  # The field constraint function
+  set field_constraint_function       = no_field_constraints
+
+  # The dimensionless method
+  set dimensionless_method            = dimensionless_off
+
+  # The normalization method
+  set normalization_method            = normalization_on
+end
+
+subsection Topology optimization start parameters
+  # Start with uniform fluid volume fraction
+  set start_point                     = 0.6
+
+  # The guess of objective function value
+  set obj_guess                       = 11516.4
+
+  # The maximum fluid volume fraction
+  set vol_cstr                        = 0.6
+
+  # The maximum flow resistance value
+  set flow_cstr                       = 0.0011
+
+  # The minimum field cooperation value
+  set field_cstr                      = 60
+
+  # The field_if_epsilon value
+  set field_if_epsilon                = 0
+
+  # The field_plus_epsilon value
+  set field_plus_epsilon              = 1e-8
+
+  # The finite element order of physical field
+  set degree                          = 1
+
+  # The finite element order of density field
+  set top_degree                      = 0
+
+  # The iteration number of each mesh refinement
+  set loop                            = 200
+
+  # The mesh refinement number
+  set refinement                      = 0
+end
+
+subsection Topology optimization relax parameters
+  # Heaviside beta relaxation
+  set relax_heaviside_beta_step_init                     = 20
+  set relax_heaviside_beta_step_size                     = 20
+  set relax_heaviside_beta_para_start                    = 1.0
+  set relax_heaviside_beta_para_end                      = 8.0
+  set relax_heaviside_beta_para_coeff                    = 2.0
+
+  # Heaviside beta equivalent relaxation
+  set relax_heaviside_beta_equivalent_step_init          = 80
+  set relax_heaviside_beta_equivalent_step_size          = 20
+  set relax_heaviside_beta_equivalent_para_start         = 1.0
+  set relax_heaviside_beta_equivalent_para_end           = 1.0
+  set relax_heaviside_beta_equivalent_para_coeff         = 2.0
+
+  # Darcy number relaxation
+  set relax_da_refer_step_init                           = 20
+  set relax_da_refer_step_size                           = 20
+  set relax_da_refer_para_start                          = 1e-3
+  set relax_da_refer_para_end                            = 1e-4
+  set relax_da_refer_para_coeff                          = 0.4
+end
+
+subsection Topology optimization filter and projection parameters
+  # The dimensionless filter radius
+  set filter_radius_dml               = 0.15
+
+  # The threshold of heaviside function
+  set heaviside_yita                  = 0.5
+end
+
+subsection Topology optimization boundary parameters
+  # The reference length (hydraulic diameter)  ← 网格不变，保持原值
+  set L_refer                         = 2e-3
+
+  # The reference velocity (inlet velocity)
+  set U_refer                         = 0.05
+
+  # The reference density (fluid)
+  set rho_refer                       = 1000.0
+
+  # The reference viscosity (fluid)
+  set viscosity_refer                 = 1e-3
+
+  # The reference inlet temperature
+  set t_in_refer                      = 20.0
+
+  # The reference heat source temperature
+  set t_Q_refer                       = 80.0
+
+  # The reference capacity (fluid)
+  set capacity_refer                  = 4183.0
+
+  # The reference thermal conductivity (fluid)
+  set k_f_refer                       = 0.6
+
+  # The reference thermal conductivity (solid)
+  set k_s_refer                       = 400.0
+
+  # The reference heat source intensity
+  set Q_refer                         = 0
+
+  # The reference boundary heat flux
+  set heatflux_refer                  = 0
+
+  # The dimensionless heatsource coefficient (solid)
+  set heatsource_coeff_solid_dml      = 5e3
+end
+
+subsection Topology optimization mesh parameters
+  # Pre-refinement applied to the mesh before starting
+  set pre_refinement                  = 0
+end
+
+subsection Topology optimization penalty parameters
+  # The permeability penalty factor (RAMP)
+  set permeability_penal              = 0.1
+
+  # The thermal conductivity penalty factor (RAMP)
+  set thermal_cond_penal              = 0.1
+
+  # The heatsource coefficient penalty factor (RAMP)
+  set heatsource_coeff_penal          = 0.1
+
+  # The convection coefficient penalty factor (RAMP)
+  set convection_coeff_penal          = 0.1
+end
